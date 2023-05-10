@@ -1,3 +1,6 @@
+#include "io.h"
+
+
 /* Frame Buffer Data Layout */
 /* The framebuffer has 80 columns and 25 rows */
 /*
@@ -35,8 +38,30 @@ static void fb_write_cell(unsigned int i, char c, unsigned char fg, unsigned cha
     fb[i + 1] = ((fg & 0x0F) << 4) | (bg & 0x0F);
 }
 
+/* The I/O ports */
+#define FB_COMMAND_PORT         0x3D4
+#define FB_DATA_PORT            0x3D5
+
+/* The I/O port commands */
+#define FB_HIGH_BYTE_COMMAND    14
+#define FB_LOW_BYTE_COMMAND     15
+
+/** fb_move_cursor:
+ *  Moves the cursor of the framebuffer to the given position
+ *
+ *  @param pos The new position of the cursor
+ */
+void fb_move_cursor(unsigned short pos)
+{
+    outb(FB_COMMAND_PORT, FB_HIGH_BYTE_COMMAND);
+    outb(FB_DATA_PORT,    ((pos >> 8) & 0x00FF));
+    outb(FB_COMMAND_PORT, FB_LOW_BYTE_COMMAND);
+    outb(FB_DATA_PORT,    pos & 0x00FF);
+}
+
 int kmain(void)
 {
     fb_write_cell(0, 'A', FB_COLOR_GREEN, FB_COLOR_BLACK);
+    fb_move_cursor(5);
     return 0xdeafbeef;
 }
