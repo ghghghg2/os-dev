@@ -4,3 +4,4 @@ kmain.o
 iso/boot/kernel.elf
 os.iso
 io.o
+display.o
