@@ -86,13 +86,20 @@ void fb_move_cursor(unsigned short pos)
 int write(char *buf, unsigned int len) 
 {
     static int cursorPos = 0;
-    int curRow = cursorPos / NUM_COLUMNS;
+    char ch;
+    int curRow;
 
-    (void)curRow;
 
     for (unsigned int i = 0; i < len; i++) {
-        fb_write_cell(cursorPos << 1, buf[i], FB_COLOR_GREEN, FB_COLOR_BLACK);
-        cursorPos++;
+        ch = buf[i];
+        if (ch == '\n') {
+            curRow = cursorPos / NUM_COLUMNS;
+            cursorPos = (curRow + 1) * NUM_COLUMNS;
+        } else {
+            fb_write_cell(cursorPos << 1, buf[i], FB_COLOR_GREEN, FB_COLOR_BLACK);
+            cursorPos++;
+        }
+        
         if (cursorPos >= NUM_CELL) {
             /* Exceed the frame buffer */
             cursorPos = fbOvfCallback();
