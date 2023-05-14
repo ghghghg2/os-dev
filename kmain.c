@@ -8,6 +8,10 @@ Bit:     | 15 14 13 12 11 10 9 8 | 7 6 5 4 | 3 2 1 0 |
 Content: | ASCII                 | FG      | BG      |
 */
 /* Constant */
+#define NUM_COLUMNS (80)
+#define NUM_ROWS (25)
+#define NUM_CELL (NUM_ROWS * NUM_COLUMNS)
+#define NUM_SCROLL_KEEP_LINE (5)
 #define FB_BASE_ADDRESS (0x000B8000)
 #define FB_COLOR_BLACK (0)
 #define FB_COLOR_BLUE (1)
@@ -35,7 +39,7 @@ static char *fb = (char *)FB_BASE_ADDRESS;
 static void fb_write_cell(unsigned int i, char c, unsigned char fg, unsigned char bg)
 {
     fb[i] = c;
-    fb[i + 1] = ((fg & 0x0F) << 4) | (bg & 0x0F);
+    fb[i + 1] = ((bg & 0x0F) << 4) | (fg & 0x0F);
 }
 
 /* The I/O ports */
@@ -59,9 +63,55 @@ void fb_move_cursor(unsigned short pos)
     outb(FB_DATA_PORT,    pos & 0x00FF);
 }
 
+static int fbOvfCallback(void)
+{
+    int i;
+    char ch, chConfig;
+    int baseIdx = (NUM_ROWS - NUM_SCROLL_KEEP_LINE) * NUM_COLUMNS;
+    int splitIdx = NUM_SCROLL_KEEP_LINE * NUM_COLUMNS;
+
+    for (i = 0; i < NUM_CELL; i++) {
+        if (i < splitIdx) {
+            ch = fb[(baseIdx + i) << 1];
+            chConfig = fb[((baseIdx + i) << 1) + 1];
+            fb[(i << 1)] = ch;
+            fb[(i << 1) + 1] = chConfig;
+        } else {
+            fb_write_cell(i << 1,  '-', FB_COLOR_GREEN, FB_COLOR_BLACK);
+        }
+    }
+    return splitIdx;
+}
+
+int write(char *buf, unsigned int len) 
+{
+    static int cursorPos = 0;
+    int curRow = cursorPos / NUM_COLUMNS;
+
+    (void)curRow;
+
+    for (unsigned int i = 0; i < len; i++) {
+        fb_write_cell(cursorPos << 1, buf[i], FB_COLOR_GREEN, FB_COLOR_BLACK);
+        cursorPos++;
+        if (cursorPos >= NUM_CELL) {
+            /* Exceed the frame buffer */
+            cursorPos = fbOvfCallback();
+        }
+    }
+    fb_move_cursor(cursorPos);
+
+    return cursorPos;
+}
+
 int kmain(void)
 {
-    fb_write_cell(0, 'A', FB_COLOR_GREEN, FB_COLOR_BLACK);
-    fb_move_cursor(5);
+    char ch = 'A';
+    // char str[] = "Hello, this is a demo message";
+    for (int i = 0; i < 2006; i++) {
+        // ch = 'A' + ((i / 80) % 26);
+        ch = 'A' + (i % 26);
+        write(&ch, 1);
+    }
+
     return 0xdeafbeef;
 }
