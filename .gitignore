@@ -3,3 +3,4 @@ kernel.elf
 *.o
 iso/boot/kernel.elf
 os.iso
+.vscode/settings.json
