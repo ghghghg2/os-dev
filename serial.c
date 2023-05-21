@@ -80,7 +80,7 @@ void serial_configure_modem(unsigned short com)
     *   Bit:     | 7 | 6 | 5  | 4  | 3   | 2   | 1   | 0   |
     *   Content: | r | r | af | lb | ao2 | ao1 | rts | dtr |
     */
-    outb(SERIAL_MODEM_COMMAND_PORT(com), 0x0B);
+    outb(SERIAL_MODEM_COMMAND_PORT(com), 0x03);
 }
 
 /** serial_is_transmit_fifo_empty:
