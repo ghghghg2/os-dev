@@ -5,3 +5,4 @@ iso/boot/kernel.elf
 os.iso
 .vscode/settings.json
 kernel.map
+com1.out
