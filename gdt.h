@@ -11,6 +11,9 @@
 #define SEG_TYPE_RW (0x2)
 #define SEG_TYPE_RX (0xA)
 
+#define SEG_KERNEL_CS 0x08
+#define SEG_KERNEL_DS 0x10
+
 
 #define SEG_BASE    (0x0U)
 #define SEG_LIMIT   (0xFFFFFU)
