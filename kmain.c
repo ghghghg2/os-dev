@@ -2,6 +2,10 @@
 #include "display.h"
 #include "serial.h"
 #include "gdt.h"
+#include "keyboard.h"
+#include "idt.h"
+#include "interrupt.h"
+#include "pic.h"
 
 int kmain(void)
 {
@@ -10,6 +14,12 @@ int kmain(void)
     char str3[] = "Serial Log\n";
 
     gdt_initialize();
+    idt_init();
+    pic_init();
+    kbd_init();
+
+    enable_interrupts();
+    
 
     serial_configure_baud_rate(SERIAL_COM1_BASE, 2);
     serial_configure_line(SERIAL_COM1_BASE);
